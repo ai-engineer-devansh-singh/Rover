@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rover Builder Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #fafafa;
+  --surface-elevated: #ffffff;
+  --text: #0a0b0d;
+  --text-body: #5b616e;
+  --text-muted: #7c828a;
+  --text-soft: #a8acb3;
+  --hairline: #dee1e6;
+  --hairline-soft: #eef0f3;
+  --accent: #ff6600;
+  --accent-soft: rgba(255,102,0,0.06);
+  --accent-text: #e55a00;
+  --green: #05b169;
+  --green-soft: rgba(5,177,105,0.08);
+  --red: #cf202f;
+  --red-soft: rgba(207,32,47,0.08);
+  --yellow: #f4b000;
+  --yellow-soft: rgba(244,176,0,0.08);
+  --blue: #0052ff;
+  --blue-soft: rgba(0,82,255,0.08);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 100px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container { max-width: 860px; margin: 0 auto; padding: 0 28px; }
+
+/* Navigation */
+.top-nav {
+  height: 60px;
+  border-bottom: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.top-nav .logo {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.top-nav .nav-links {
+  display: flex;
+  gap: 24px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Header */
+header {
+  padding: 40px 0 28px;
+}
+.report-meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.report-title {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  color: var(--text);
+}
+.report-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-weight: 400;
+}
+/* Narrative */
+.narrative {
+  padding: 28px 0 8px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-body);
+  max-width: 680px;
+}
+.narrative p { margin-bottom: 0; }
+.narrative strong { color: var(--text); font-weight: 600; }
+
+/* Score ring */
+.score-ring {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 28px 0 36px;
+  flex-wrap: wrap;
+}
+.score-number {
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: -2px;
+  line-height: 1;
+  color: var(--text);
+}
+.score-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.score-badge-inline {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Section */
+.section { margin-bottom: 56px; }
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 24px;
+  letter-spacing: -0.2px;
+}
+
+/* Insight grid */
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.insight-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.insight-card:hover {
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+.insight-card .card-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-text);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+.insight-card .card-value {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.insight-card .card-desc {
+  font-size: 13px;
+  color: var(--text-body);
+  line-height: 1.5;
+}
+
+/* Score bars */
+.score-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 14px 0;
+}
+.score-bar-fill {
+  height: 8px;
+  border-radius: 4px;
+  flex: 1;
+  background: var(--hairline-soft);
+  overflow: hidden;
+  min-width: 100px;
+}
+.score-bar-inner {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1.2s ease;
+}
+.score-bar-label {
+  min-width: 120px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.score-bar-value {
+  min-width: 28px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Chart containers */
+.chart-wrapper {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  border: 1px solid var(--hairline);
+}
+.chart-container { position: relative; height: 300px; }
+
+/* Tables */
+.timeline-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+.timeline-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--hairline);
+}
+.timeline-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--hairline-soft);
+  color: var(--text-body);
+  vertical-align: top;
+}
+.timeline-table tr:last-child td { border-bottom: none; }
+.timeline-table td:first-child {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  white-space: nowrap;
+  width: 60px;
+  font-weight: 500;
+}
+.timeline-table td:nth-child(2) { color: var(--text); font-weight: 500; }
+
+/* Tags */
+.outcome-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
+}
+.outcome-success { background: var(--green-soft); color: var(--green); }
+.outcome-partial { background: var(--yellow-soft); color: #9a7000; }
+.outcome-failure { background: var(--red-soft); color: var(--red); }
+.outcome-exploratory { background: var(--blue-soft); color: var(--blue); }
+.outcome-abandoned { background: var(--hairline-soft); color: var(--text-muted); }
+.complexity-low { color: var(--green); font-size: 11px; font-weight: 600; }
+.complexity-medium { color: #9a7000; font-size: 11px; font-weight: 600; }
+.complexity-high { color: var(--red); font-size: 11px; font-weight: 600; }
+
+/* Decision cards */
+.decision-list { display: flex; flex-direction: column; gap: 14px; }
+.decision-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  transition: box-shadow 0.2s;
+}
+.decision-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+.decision-type {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 10px;
+}
+.type-architecture { background: rgba(139,92,246,0.08); color: #7c3aed; }
+.type-implementation { background: rgba(0,82,255,0.08); color: var(--blue); }
+.type-correction { background: var(--yellow-soft); color: #9a7000; }
+.type-exploration { background: var(--hairline-soft); color: var(--text-muted); }
+.type-dependency { background: var(--green-soft); color: var(--green); }
+.confidence-high { color: var(--green); font-size: 12px; font-weight: 600; }
+.confidence-medium { color: #9a7000; font-size: 12px; font-weight: 600; }
+.confidence-low { color: var(--red); font-size: 12px; font-weight: 600; }
+.decision-title {
+  margin-top: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.45;
+}
+.decision-desc {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Action cards */
+.action-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  margin-bottom: 14px;
+  transition: box-shadow 0.2s;
+}
+.action-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+.action-area {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-text);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+}
+.action-tip {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+.action-example {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-body);
+  font-style: italic;
+  border-left: 3px solid var(--hairline);
+  line-height: 1.45;
+}
+
+/* Empty state */
+.empty-state {
+  font-size: 15px;
+  color: var(--text-muted);
+  padding: 20px 0;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  margin-top: 72px;
+  padding: 32px 0 64px;
+  border-top: 1px solid var(--hairline);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .container { padding: 0 16px; }
+  .report-title { font-size: 28px; }
+  .score-number { font-size: 48px; }
+  .insight-grid { grid-template-columns: 1fr; }
+  .score-bar-label { min-width: 90px; font-size: 13px; }
+  .chart-container { height: 240px; }
+  .timeline-table th, .timeline-table td { padding: 10px 8px; font-size: 12px; }
+  .timeline-table td:nth-child(5), .timeline-table th:nth-child(5) { display: none; }
+}
+@media (min-width: 721px) and (max-width: 900px) {
+  .insight-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;width:100%">
+    <div class="logo">Rover</div>
+    <div class="nav-links">
+      <span style="color:var(--text-muted)">Reports</span>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- HEADER -->
+<header>
+  <div class="report-meta">
+    <div>
+      <h1 class="report-title">Builder Report</h1>
+      <div class="report-subtitle">{{ session_counts.total }} sessions &middot; {{ features.total_prompts }} prompts &middot; {{ generated_at[:10] }}</div>
+    </div>
+  </div>
+
+  <div class="narrative">
+    <p>You steer AI with clear intent and minimal babysitting. Your strongest pattern is <strong>autonomous delegation</strong> — you set direction and let agents execute. With {{ features.tool_diversity }} tools in rotation and sustained sessions, you ship fast. Your next step is to add explicit verification steps before closing sessions, rather than stopping at partial diagnosis.</p>
+  </div>
+
+  <div class="score-ring">
+    <div>
+      <div class="score-number">{{ "%.0f"|format(insights.avg_score) }}</div>
+      <div class="score-label">Overall Score / 100</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span class="score-badge-inline">{{ archetype.archetype }}</span>
+    </div>
+  </div>
+</header>
+
+<!-- INSIGHT GRID -->
+<section class="section">
+  <div class="insight-grid">
+    <div class="insight-card">
+      <div class="card-label">Builder Type</div>
+      <div class="card-value">{{ archetype.archetype }}</div>
+      <div class="card-desc">High tool diversity, minimal human intervention. You adapt your approach to the task at hand.</div>
+    </div>
+    <div class="insight-card">
+      <div class="card-label">How much did you ship?</div>
+      <div class="card-value">{{ features.total_prompts }} prompts</div>
+      <div class="card-desc">Across {{ session_counts.total }} sessions with {{ features.tool_diversity }} distinct tools.</div>
+    </div>
+    <div class="insight-card">
+      <div class="card-label">How do you work?</div>
+      <div class="card-value">{% if features.autonomy_score > 0.8 %}Self-directed{% elif features.autonomy_score > 0.5 %}Collaborative{% else %}Hands-on{% endif %}</div>
+      <div class="card-desc">{{ insights.autonomy }}</div>
+    </div>
+    <div class="insight-card">
+      <div class="card-label">Your longest session</div>
+      <div class="card-value">{{ "%.0f"|format(insights.max_session_duration) }} min</div>
+      <div class="card-desc">Your deepest uninterrupted stretch with an agent.</div>
+    </div>
+    <div class="insight-card">
+      <div class="card-label">Avg session length</div>
+      <div class="card-value">{{ "%.0f"|format(features.avg_session_duration) }} min</div>
+      <div class="card-desc">{{ insights.session_quality }}</div>
+    </div>
+    <div class="insight-card">
+      <div class="card-label">Prompt style</div>
+      <div class="card-value">{{ (features.prompt_style or "mixed")|title }}</div>
+      <div class="card-desc">{{ insights.style_tip }}</div>
+    </div>
+  </div>
+</section>
+
+<!-- DIMENSION SCORES -->
+<section class="section">
+  <div class="section-title">Dimension Scores</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start">
+    <div>
+      {% set score_items = [("Steering",scores.steering),("Execution",scores.execution),("Engineering",scores.engineering),("Product Thinking",scores.product_thinking),("Planning",scores.planning)] %}
+      {% for label,val in score_items %}
+      <div class="score-bar">
+        <span class="score-bar-label">{{ label }}</span>
+        <div class="score-bar-fill"><div class="score-bar-inner" style="width:{{ val }}%;background:{% if val >= 70 %}var(--green){% elif val >= 50 %}var(--yellow){% else %}var(--red){% endif %}"></div></div>
+        <span class="score-bar-value">{{ "%.0f"|format(val) }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="chart-wrapper">
+      <div class="chart-container">
+        <canvas id="radarChart"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU DID WELL -->
+<section class="section">
+  <div class="section-title">What You Did Well</div>
+  <div class="insight-grid">
+    {% for s in insights.strengths %}
+    <div class="insight-card">
+      <div class="card-label" style="color:var(--green)">Strength</div>
+      <div class="card-desc" style="margin-top:10px;color:var(--text);font-weight:500">{{ s }}</div>
+    </div>
+    {% endfor %}
+    {% if insights.tool_insights %}
+    {% for t in insights.tool_insights %}
+    <div class="insight-card">
+      <div class="card-label" style="color:var(--blue)">Tool Pattern</div>
+      <div class="card-desc" style="margin-top:10px;color:var(--text);font-weight:500">{{ t }}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% if insights.time_insight %}
+    <div class="insight-card">
+      <div class="card-label" style="color:var(--blue)">When You Code</div>
+      <div class="card-desc" style="margin-top:10px;color:var(--text);font-weight:500">{{ insights.time_insight }}</div>
+    </div>
+    {% endif %}
+    <div class="insight-card">
+      <div class="card-label" style="color:var(--green)">Prompt Style</div>
+      <div class="card-desc" style="margin-top:10px;color:var(--text);font-weight:500">{{ insights.style_tip }}</div>
+    </div>
+  </div>
+</section>
+
+<!-- GROWTH OPPORTUNITIES -->
+<section class="section">
+  <div class="section-title">Growth Opportunities</div>
+  {% if insights.growth_actions %}
+    {% for action in insights.growth_actions %}
+    <div class="action-card">
+      <div class="action-area">{{ action.area }}</div>
+      <div class="action-tip">{{ action.tip }}</div>
+      <div class="action-example">Example: {{ action.example }}</div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">You're performing well across all dimensions. Keep shipping — the best way to level up is to keep building.</div>
+  {% endif %}
+</section>
+
+<!-- ARCHETYPE -->
+<section class="section">
+  <div class="section-title">Archetype Profile</div>
+  <div style="background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius-lg);padding:28px">
+    <p style="font-size:15px;color:var(--text-body);line-height:1.6;margin-bottom:24px">
+      {{ archetype.description }}
+    </p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
+      <div>
+        <h3 style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;letter-spacing:0.2px">Standout Traits</h3>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+          {% for trait in archetype.standout_traits %}
+          <li style="font-size:14px;color:var(--text-body);display:flex;align-items:flex-start;gap:8px;line-height:1.45">
+            <span style="color:var(--green);font-weight:700;flex-shrink:0">&check;</span> {{ trait }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h3 style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;letter-spacing:0.2px">Growth Edges</h3>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+          {% for edge in archetype.growth_edges %}
+          <li style="font-size:14px;color:var(--text-body);display:flex;align-items:flex-start;gap:8px;line-height:1.45">
+            <span style="color:var(--yellow);font-weight:700;flex-shrink:0">&rarr;</span> {{ edge }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOL USAGE -->
+<section class="section">
+  <div class="section-title">Tool Usage</div>
+  <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:20px">
+    <div class="chart-wrapper">
+      <div class="chart-container">
+        <canvas id="toolChart"></canvas>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius-lg);padding:24px">
+      <h3 style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:18px;letter-spacing:0.2px">Top Tools</h3>
+      {% for tool,count in insights.top_tools %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--hairline-soft)">
+        <span style="font-size:14px;color:var(--text);font-weight:500">{{ tool }}</span>
+        <span style="font-size:14px;color:var(--text-muted);font-weight:600">{{ count }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- TEMPORAL PATTERNS -->
+<section class="section">
+  <div class="section-title">When You Build</div>
+  <div class="chart-wrapper">
+    <div class="chart-container">
+      <canvas id="timeChart"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- SESSION TIMELINE -->
+{% if timeline %}
+<section class="section">
+  <div class="section-title">Recent Sessions</div>
+  <div style="overflow-x:auto">
+    <table class="timeline-table">
+      <thead>
+        <tr><th>Date</th><th>Goal</th><th>Duration</th><th>Prompts</th><th>Tools</th><th>Outcome</th><th>Complexity</th></tr>
+      </thead>
+      <tbody>
+        {% for s in timeline %}
+        <tr>
+          <td>{{ s.date }}</td>
+          <td>{{ s.goal }}</td>
+          <td>{{ s.duration }}m</td>
+          <td>{{ s.prompts }}</td>
+          <td>{{ s.tools }}</td>
+          <td><span class="outcome-tag outcome-{{ s.outcome }}">{{ s.outcome }}</span></td>
+          <td><span class="complexity-{{ s.complexity }}">{{ s.complexity }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+<!-- DECISION LOG -->
+{% if decisions %}
+<section class="section">
+  <div class="section-title">Key Decisions</div>
+  <div class="decision-list">
+    {% for d in decisions %}
+    <div class="decision-card">
+      <span class="decision-type type-{{ d.type }}">{{ d.type }}</span>
+      <span class="confidence-{{ d.confidence }}">{{ d.confidence }} confidence</span>
+      <div class="decision-title">{{ d.decision }}</div>
+      <div class="decision-desc">{{ d.context }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- FOOTER -->
+<footer>
+  Generated by Rover on {{ generated_at }} &middot; {% if llm_used %}LLM-enhanced analysis{% else %}Rule-based analysis{% endif %} &middot; All data stays local
+</footer>
+
+</div>
+
+<script>
+const scores = {{ scores.to_dict()|tojson }};
+const tools = {{ features.tool_histogram|tojson }};
+const hours = {{ features.peak_hours|tojson }};
+const hourDist = {{ features.hour_distribution|tojson }};
+
+// Radar chart
+new Chart(document.getElementById('radarChart'), {
+  type: 'radar',
+  data: {
+    labels: ['Steering','Execution','Engineering','Product Thinking','Planning'],
+    datasets: [{
+      label: 'Your Scores',
+      data: [scores.steering, scores.execution, scores.engineering, scores.product_thinking, scores.planning],
+      backgroundColor: 'rgba(255,102,0,0.10)',
+      borderColor: '#ff6600',
+      pointBackgroundColor: '#ff6600',
+      pointBorderColor: '#fff',
+      borderWidth: 2.5,
+      pointRadius: 4,
+      pointHoverRadius: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        min: 0, max: 100,
+        ticks: { stepSize: 20, color: '#a8acb3', backdropColor: 'transparent', font: {size: 10, weight: '500'} },
+        grid: { color: '#eef0f3' },
+        angleLines: { color: '#eef0f3' },
+        pointLabels: { color: '#5b616e', font: {size: 12, weight: '600'}, padding: 16 }
+      }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+
+// Tool bar chart
+const toolLabels = Object.keys(tools);
+const toolData = Object.values(tools);
+new Chart(document.getElementById('toolChart'), {
+  type: 'bar',
+  data: {
+    labels: toolLabels,
+    datasets: [{ label: 'Uses', data: toolData, backgroundColor: '#ff6600', borderRadius: 5, borderSkipped: false }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { color: '#7c828a', font: {size: 11, weight: '500'}, padding: 8 },
+        grid: { color: '#eef0f3', drawBorder: false },
+        border: {display: false}
+      },
+      x: {
+        ticks: { color: '#7c828a', font: {size: 10, weight: '500'}, maxRotation: 45, minRotation: 45 },
+        grid: { display: false },
+        border: {display: false}
+      }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+
+// Hour distribution
+const hourLabels = Array.from({length:24},(_,i)=>i+':00');
+const hourData = hourLabels.map((_,i)=>hourDist[String(i)] || 0);
+new Chart(document.getElementById('timeChart'), {
+  type: 'bar',
+  data: {
+    labels: hourLabels,
+    datasets: [{ label: 'Sessions', data: hourData, backgroundColor: hourLabels.map((_,i)=>hours.includes(i)?'#ff6600':'#eef0f3'), borderRadius: 4, borderSkipped: false, barPercentage: 0.7, categoryPercentage: 0.8 }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { color: '#7c828a', font: {size: 11, weight: '500'}, padding: 8, stepSize: 1 },
+        grid: { color: '#eef0f3', drawBorder: false },
+        border: {display: false}
+      },
+      x: {
+        ticks: { color: '#7c828a', maxTicksLimit: 12, font: {size: 10, weight: '500'} },
+        grid: { display: false },
+        border: {display: false}
+      }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+</script>
+</body>
+</html>
