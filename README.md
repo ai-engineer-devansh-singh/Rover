@@ -4,8 +4,12 @@ Local analytics for AI coding sessions. Understand how you build with AI.
 
 ## Install
 
+**From source (not yet on PyPI):**
+
 ```bash
-pip install rover-cli
+git clone https://github.com/ai-engineer-devansh-singh/Rover.git
+cd Rover
+pip install -e .
 ```
 
 Requires Python 3.10+.
