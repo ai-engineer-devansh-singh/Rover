@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -29,6 +30,13 @@ from rover.reports.html_report import generate_html_report
 
 
 console = Console()
+
+
+def _env_command(var: str, value: str = "...") -> str:
+    """Return platform-specific env var assignment command."""
+    if sys.platform == "win32":
+        return f'$env:{var}="{value}"'
+    return f'export {var}={value}'
 
 
 def _parse_since(value: str | None) -> datetime | None:
@@ -91,10 +99,10 @@ def config():
     for name, (env_var, value) in providers.items():
         if name == "anthropic" and value:
             status = "[green]✓ Ready[/green]"
-            setup = f"export {env_var}='...'"
+            setup = _env_command(env_var)
         elif name == "openai" and value:
             status = "[green]✓ Ready[/green]"
-            setup = f"export {env_var}='...'"
+            setup = _env_command(env_var)
         elif name == "ollama":
             # Check if ollama is actually running
             from rover.llm.client import OllamaClient
@@ -108,7 +116,7 @@ def config():
                 setup = "ollama pull llama3.2 && ollama serve"
         else:
             status = "[dim]— Not configured[/dim]"
-            setup = f"export {env_var}='...'"
+            setup = _env_command(env_var)
 
         table.add_row(name.capitalize(), status, setup)
 
@@ -123,7 +131,7 @@ def config():
         console.print("\n[yellow]⚠ No LLM provider configured.[/yellow]")
         console.print("[dim]  Rover will fall back to rule-based analysis (no LLM calls).[/dim]")
         console.print("\nQuick start:")
-        console.print('  export ANTHROPIC_API_KEY="sk-ant-api03-..."  # Recommended')
+        console.print(f"  {_env_command('ANTHROPIC_API_KEY', 'sk-ant-api03-...')}  # Recommended")
         console.print("  rover analyze --since 2m")
 
     console.print()
@@ -160,6 +168,7 @@ def analyze(project_name: str | None, since_str: str | None, no_repo: bool, no_l
     elif not no_llm:
         console.print("[yellow]⚠ No LLM provider configured. Using rule-based analysis.[/yellow]")
         console.print("[dim]  Set ANTHROPIC_API_KEY, ROVER_LLM_API_KEY, or start Ollama for enhanced results.[/dim]")
+        console.print(f"[dim]  Example: {_env_command('ANTHROPIC_API_KEY', 'sk-ant-api03-...')}[/dim]")
         console.print("[dim]  Run 'rover config' for setup help.[/dim]")
         console.print()
 

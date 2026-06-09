@@ -24,18 +24,69 @@ ollama pull llama3.2 && rover analyze --since 2m
 ```
 
 **OpenAI:**
+
+**macOS / Linux (bash/zsh):**
 ```bash
-export ROVER_LLM_API_KEY="sk-your-key"; export ROVER_LLM_BASE_URL="https://api.openai.com/v1"; rover analyze --since 2m
+export ROVER_LLM_API_KEY="sk-your-key"
+export ROVER_LLM_BASE_URL="https://api.openai.com/v1"
+rover analyze --since 2m
+```
+
+**Windows PowerShell:**
+```powershell
+$env:ROVER_LLM_API_KEY="sk-your-key"
+$env:ROVER_LLM_BASE_URL="https://api.openai.com/v1"
+rover analyze --since 2m
+```
+
+**Windows CMD:**
+```cmd
+set ROVER_LLM_API_KEY=sk-your-key
+set ROVER_LLM_BASE_URL=https://api.openai.com/v1
+rover analyze --since 2m
 ```
 
 **Anthropic:**
+
+**macOS / Linux (bash/zsh):**
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-your-key"; rover analyze --since 2m
+export ANTHROPIC_API_KEY="sk-ant-your-key"
+rover analyze --since 2m
+```
+
+**Windows PowerShell:**
+```powershell
+$env:ANTHROPIC_API_KEY="sk-ant-your-key"
+rover analyze --since 2m
+```
+
+**Windows CMD:**
+```cmd
+set ANTHROPIC_API_KEY=sk-ant-your-key
+rover analyze --since 2m
 ```
 
 **OpenRouter:**
+
+**macOS / Linux (bash/zsh):**
 ```bash
-export ROVER_LLM_API_KEY="your-key"; export ROVER_LLM_BASE_URL="https://openrouter.ai/api/v1"; rover analyze --since 2m
+export ROVER_LLM_API_KEY="your-key"
+export ROVER_LLM_BASE_URL="https://openrouter.ai/api/v1"
+rover analyze --since 2m
+```
+
+**Windows PowerShell:**
+```powershell
+$env:ROVER_LLM_API_KEY="your-key"
+$env:ROVER_LLM_BASE_URL="https://openrouter.ai/api/v1"
+rover analyze --since 2m
+```
+
+**Windows CMD:**
+```cmd
+set ROVER_LLM_API_KEY=your-key
+set ROVER_LLM_BASE_URL=https://openrouter.ai/api/v1
+rover analyze --since 2m
 ```
 
 **No LLM (free, offline):**
